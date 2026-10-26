@@ -8,12 +8,13 @@ module
 public import Mathlib.Data.Finset.NoncommProd
 
 /-!
-# Reindexing and inversion of products of commuting elements
+# Reindexing and identity factors in products of commuting elements
 
 Mathlib's `Finset.noncommProd` multiplies a finite commuting family in an arbitrary
-monoid. Here embeddings reindex these products, and inversion in a group inverts
-each factor. These formulas allow unordered simultaneous wall crossings to be
-transported and reversed without choosing an order on the walls.
+monoid. Here embeddings reindex these products, adjoining identity factors preserves
+them, and inversion in a group inverts each factor. These formulas allow unordered
+simultaneous wall crossings to be restricted, transported and reversed without
+choosing an order on the walls.
 -/
 
 public section
@@ -21,6 +22,20 @@ public section
 namespace Finset
 
 variable {α β G : Type*}
+
+/-- Adjoining identity factors preserves an unordered product of commuting elements. -/
+theorem noncommProd_subset [Monoid G] {s t : Finset α} (hst : s ⊆ t) (f : α → G)
+    (comm : (t : Set α).Pairwise (fun a b => Commute (f a) (f b)))
+    (hf : ∀ a ∈ t, a ∉ s → f a = 1) :
+    s.noncommProd f (comm.mono (coe_subset.mpr hst)) = t.noncommProd f comm := by
+  classical
+  have hc : ((s ∪ t \ s : Finset α) : Set α).Pairwise (fun a b => Commute (f a) (f b)) := by
+    simpa only [union_sdiff_of_subset hst] using comm
+  have hz : (t \ s).noncommProd f (comm.mono (coe_subset.mpr sdiff_subset)) = 1 := by
+    simpa using noncommProd_eq_pow_card (t \ s) f _ 1
+      (fun a ha => hf a (mem_sdiff.mp ha).1 (mem_sdiff.mp ha).2)
+  have hu := noncommProd_union_of_disjoint (disjoint_sdiff_self_right : Disjoint s (t \ s)) f hc
+  simpa only [union_sdiff_of_subset hst, hz, mul_one] using hu.symm
 
 /-- Reindex a product of commuting elements along an embedding. -/
 theorem noncommProd_map [Monoid G] (s : Finset α) (e : α ↪ β) (f : β → G)

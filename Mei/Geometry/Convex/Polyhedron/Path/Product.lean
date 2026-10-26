@@ -41,7 +41,8 @@ variable {V ι G K : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [Finite �
   {x y : WallComplement W}
 
 include hcomm in
-private theorem signedCrossingEvent_pairwise (e : x ⟶ y) (t : ℝ) :
+/-- All signed labels at one crossing time commute, including coincident walls. -/
+theorem signedCrossingEvent_pairwise (e : x ⟶ y) (t : ℝ) :
     (signedCrossingEvent ν x y t : Set (ι × ℤ)).Pairwise
       (fun a b => Commute (label a.1 ^ a.2) (label b.1 ^ b.2)) := by
   intro a ha b hb _

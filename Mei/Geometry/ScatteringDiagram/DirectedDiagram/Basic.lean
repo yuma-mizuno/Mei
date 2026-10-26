@@ -86,7 +86,8 @@ theorem active_mono : Monotone D.active := by
   rw [he, map_one] at hp
   exact hp.symm
 
-private theorem activeLabels_commute (k : ℕ) (a b : D.active k)
+/-- The projected labels of active walls with the same affine span commute. -/
+theorem commute_projection_label (k : ℕ) (a b : D.active k)
     (hab : affineSpan ℝ (D.wall a).support = affineSpan ℝ (D.wall b).support) :
     Commute (CompletedGroup.projection k (D.wall a).label)
       (CompletedGroup.projection k (D.wall b).label) :=
@@ -98,7 +99,7 @@ def levelPathProduct (k : ℕ)
     {x y : WallComplement (fun j : D.active k => (D.wall j).support)}
     (p : AdmissiblePLPath x y) : d.truncatedGroup ℒ k :=
   p.wallPathProduct (fun j : D.active k => h.realCharacter (D.wall j).normal)
-    (fun j => CompletedGroup.projection k (D.wall j).label) (D.activeLabels_commute k)
+    (fun j => CompletedGroup.projection k (D.wall j).label) (D.commute_projection_label k)
 
 /-- The grouped wall-family product characterizes finite-order transport, independently
 of which proof of coplanar commutation is used. -/

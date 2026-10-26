@@ -47,6 +47,8 @@ namespace CommonWallComplement
 variable {W : ∀ j, I j → Set V}
 
 /-- View a common allowed point in one wall complement. -/
+-- Endpoints must compute when restricting a projected path to a smaller family.
+@[expose]
 def projection (j : J) (x : CommonWallComplement W) : WallComplement (W j) :=
   ⟨x.val, x.notMem j⟩
 

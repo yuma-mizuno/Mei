@@ -150,6 +150,8 @@ end AdmissibleSegment
 
 /-- Forget walls along an index map, keeping the same vertices and affine segments.
 Mathlib's `Prefunctor.mapPath` extends this operation to polygonal paths. -/
+-- Objects must compute when comparing the same path in nested wall families.
+@[expose]
 def restrictPrefunctor {κ : Type*} (W : ι → Set V) (f : κ → ι) :
     WallComplement W ⥤q WallComplement (W ∘ f) where
   obj x := ⟨x.val, fun j => x.notMem (f j)⟩
