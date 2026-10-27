@@ -10,6 +10,7 @@ public import Mathlib.Combinatorics.Quiver.Path.Vertices
 public import Mathlib.Data.List.Chain
 public import Mathlib.Combinatorics.Quiver.Path.Weight
 public import Mathlib.Algebra.Group.Submonoid.Basic
+public import Mathlib.Algebra.BigOperators.Group.List.Basic
 
 /-!
 # Vertices and reversal of paths under prefunctors
@@ -21,8 +22,10 @@ A prefunctor also applies its object map to the vertex list, allowing geometric
 paths to be compared after forgetting some of their admissibility conditions.
 Relations between consecutive vertices can be checked separately on each part
 of a concatenation, using Mathlib's `List.isChain_split` at the common endpoint.
-Group-valued edge weights can be gauged at the vertices: if every gauged edge
-lies in a submonoid, so does the gauged weight of the entire path.
+An initial segment of a vertex-and-edge sequence defines a path with its expected
+length, vertex list and ordered weight. Group-valued edge weights can be gauged
+at the vertices: if every gauged edge lies in a submonoid, so does the gauged
+weight of the entire path.
 -/
 
 public section
@@ -57,6 +60,44 @@ end Prefunctor
 namespace Quiver.Path
 
 variable {V : Type*} [Quiver V]
+
+/-- The path formed by the first `n` successive edges of a vertex sequence. -/
+def ofSeq (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1)) : (n : ℕ) → Path (x 0) (x n)
+  | 0 => .nil
+  | n + 1 => (ofSeq x e n).cons (e n)
+
+@[simp]
+theorem ofSeq_zero (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1)) :
+    ofSeq x e 0 = .nil := (rfl)
+
+@[simp]
+theorem ofSeq_succ (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1)) (n : ℕ) :
+    ofSeq x e (n + 1) = (ofSeq x e n).cons (e n) := (rfl)
+
+@[simp]
+theorem length_ofSeq (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1)) (n : ℕ) :
+    (ofSeq x e n).length = n := by
+  induction n with
+  | zero => simp
+  | succ n ih => simp [ih]
+
+/-- The vertex list of the initial sequence path, including both endpoints. -/
+@[simp]
+theorem vertices_ofSeq (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1)) (n : ℕ) :
+    (ofSeq x e n).vertices = (List.range (n + 1)).map x := by
+  induction n with
+  | zero => simp
+  | succ n ih => simp [vertices_cons, ih, List.range_succ]
+
+/-- The weight of an initial sequence path is the ordered product of its edges. -/
+@[simp]
+theorem weight_ofSeq {M : Type*} [Monoid M]
+    (x : ℕ → V) (e : ∀ n, x n ⟶ x (n + 1))
+    (w : ∀ {u v : V}, (u ⟶ v) → M) (n : ℕ) :
+    (ofSeq x e n).weight w = ((List.range n).map fun j => w (e j)).prod := by
+  induction n with
+  | zero => simp
+  | succ n ih => simp [ih, List.prod_range_succ]
 
 /-- A relation holds between consecutive vertices of a concatenated path exactly when
 it holds along both paths. The common endpoint is counted only once. -/
