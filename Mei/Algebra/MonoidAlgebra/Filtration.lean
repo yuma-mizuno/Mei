@@ -6,6 +6,7 @@ Authors: Codex
 module
 
 public import Mei.Algebra.MonoidAlgebra.Derivation
+public import Mei.Algebra.MonoidAlgebra.Character
 public import Mei.RingTheory.FilteredAlgebra.Basic
 public import Mathlib.Algebra.MonoidAlgebra.Ideal
 import Mathlib.Algebra.MonoidAlgebra.Support
@@ -173,6 +174,21 @@ theorem monoidAlgebraIdeal_le_comap_mapDomainRingHom {N : Type*} [AddCommMonoid 
   rw [monoidAlgebraIdeal_le_iff]
   intro n hn hd
   simp only [Ideal.mem_comap, of'_apply, mapDomainRingHom_apply, mapDomain_single,
+    single_mem_monoidAlgebraIdeal_iff]
+  exact Or.inr ⟨T n, hT n hn, hδ n hn hd, 0, by simp⟩
+
+/-- Character-weighted exponent transport respects monomial cutoffs with the
+same bound as ordinary exponent transport, even when character values vanish. -/
+theorem monoidAlgebraIdeal_le_comap_characterMap {R N : Type*}
+    [CommSemiring R] [AddCommMonoid N]
+    (Q : AddSubmonoid N) (ε : N →+ ℤ) (T : M →+ N)
+    (χ : Multiplicative M →* R) (hT : ∀ n ∈ P, T n ∈ Q) {a b : ℕ}
+    (hδ : ∀ n ∈ P, (a : ℤ) ≤ δ n → (b : ℤ) ≤ ε (T n)) :
+    P.monoidAlgebraIdeal δ a ≤
+      (Q.monoidAlgebraIdeal ε b).comap (characterMap R T χ) := by
+  rw [monoidAlgebraIdeal_le_iff]
+  intro n hn hd
+  simp only [Ideal.mem_comap, of'_apply, characterMap_single, one_mul,
     single_mem_monoidAlgebraIdeal_iff]
   exact Or.inr ⟨T n, hT n hn, hδ n hn hd, 0, by simp⟩
 
