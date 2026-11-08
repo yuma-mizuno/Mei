@@ -9,6 +9,7 @@ public import Mei.Data.Fin.HEq
 public import Mei.LinearAlgebra.GradedCorrespondence.Basic
 public import Mathlib.Algebra.Category.ModuleCat.Semi
 public import Mathlib.Algebra.BigOperators.Fin
+public import Mathlib.Basic.Finite.Sum
 public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Topology.Maps.Proper.Basic
 public import Mathlib.Topology.OpenPartialHomeomorph.Defs
@@ -373,12 +374,13 @@ noncomputable def weightedEvaluation {ι : Type*} [Finite ι] (family : ι → B
   let := Fintype.ofFinite ι
   ∑ j, (family j).decorationIn (hu j)
 
-theorem weightedEvaluation_def {ι : Type*} [Fintype ι] (family : ι → BrokenLine D)
+theorem weightedEvaluation_def {ι : Type*} [Finite ι] (family : ι → BrokenLine D)
     (u : D.State) (hu : ∀ j, (family j).finalState = u) :
-    weightedEvaluation family u hu = ∑ j, (family j).decorationIn (hu j) := by
+    weightedEvaluation family u hu =
+      let := Fintype.ofFinite ι
+      ∑ j, (family j).decorationIn (hu j) := by
   unfold weightedEvaluation
   congr
-  exact Subsingleton.elim _ _
 
 /-- Reindexing a family does not change its evaluation. -/
 theorem weightedEvaluation_comp_equiv {ι κ : Type*} [Finite ι] [Finite κ] (e : ι ≃ κ)
@@ -396,6 +398,24 @@ theorem weightedEvaluation_isEmpty {ι : Type*} [Finite ι] [IsEmpty ι] (family
   let := Fintype.ofFinite ι
   rw [weightedEvaluation_def]
   exact Finset.sum_of_isEmpty _
+
+/-- Evaluation adds over a disjoint union of finite families. -/
+@[simp]
+theorem weightedEvaluation_sum {ι κ : Type*} [Finite ι] [Finite κ]
+    (family₁ : ι → BrokenLine D) (family₂ : κ → BrokenLine D) (u : D.State)
+    (hu : ∀ j, (Sum.elim family₁ family₂ j).finalState = u) :
+    weightedEvaluation (Sum.elim family₁ family₂) u hu =
+      weightedEvaluation family₁ u (fun j => hu (Sum.inl j)) +
+        weightedEvaluation family₂ u (fun j => hu (Sum.inr j)) := by
+  let := Fintype.ofFinite ι
+  let := Fintype.ofFinite κ
+  let _ : Fintype (ι ⊕ κ) := inferInstance
+  have hu₁ : ∀ j, (family₁ j).finalState = u := fun j => hu (Sum.inl j)
+  have hu₂ : ∀ j, (family₂ j).finalState = u := fun j => hu (Sum.inr j)
+  simp only [weightedEvaluation_def]
+  rw [show Fintype.ofFinite (ι ⊕ κ) = (inferInstance : Fintype (ι ⊕ κ)) from
+    Subsingleton.elim _ _]
+  apply Fintype.sum_sum_type
 
 /-- A single broken line evaluates to its final decoration. -/
 @[simp]
